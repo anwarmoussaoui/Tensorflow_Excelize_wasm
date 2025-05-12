@@ -21,7 +21,6 @@ public class ContextPool {
         options.put("js.top-level-await", "true");
         options.put("js.webassembly", "true");
         options.put("js.commonjs-require", "true");
-        options.put("js.mle-mode", "true");
         options.put("js.esm-eval-returns-exports", "true");
         options.put("js.unhandled-rejections", "throw");
         options.put("js.commonjs-require-cwd", Paths.get("./").toAbsolutePath().toString());
