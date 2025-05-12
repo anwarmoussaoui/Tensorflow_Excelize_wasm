@@ -92,10 +92,10 @@
 
 <form th:action="@{/predict}" method="post">
     <label>Bedrooms:</label>
-    <input type="number" name="bedrooms" required step="0.1"/>
+    <input type="number" name="bedrooms" required step="1"/>
 
     <label>Bathrooms:</label>
-    <input type="number" name="bathrooms" required step="0.1"/>
+    <input type="number" name="bathrooms" required step="1"/>
 
     <label>Living Area (sqft):</label>
     <input type="number" name="sqftLiving" required/>
@@ -104,7 +104,7 @@
     <input type="number" name="sqftLot" required/>
 
     <label>Floors:</label>
-    <input type="number" name="floors" required step="0.1"/>
+    <input type="number" name="floors" required step="1"/>
 
     <label>Waterfront (1 or 0):</label>
     <input type="number" name="waterfront" required min="0" max="1"/>

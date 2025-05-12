@@ -20,6 +20,7 @@ public class ContextPool {
         options.put("js.ecmascript-version", "2023");
         options.put("js.top-level-await", "true");
         options.put("js.webassembly", "true");
+        options.put("js.performance", "true");
         options.put("js.commonjs-require", "true");
         options.put("js.mle-mode", "true");
         options.put("js.esm-eval-returns-exports", "true");
@@ -33,54 +34,32 @@ public class ContextPool {
 
         Context context = Context.newBuilder("js", "wasm")
                 .allowHostAccess(HostAccess.ALL)
-                .allowIO(true)
-                .option("engine.WarnInterpreterOnly", "false")
-                .option("js.esm-eval-returns-exports", "true")
-                .option("js.unhandled-rejections", "throw")
                 .allowAllAccess(true)
-                .allowHostClassLookup(s -> true)
                 .options(getLanguageOptions())
                 .build();
-            context.eval(Source.newBuilder("js", ContextPool.class.getResource("/encoding-indexes.js")).build());
-            context.eval(Source.newBuilder("js", ContextPool.class.getResource("/encoding.js")).build());
 
 
             ExcelizePool excelizePool = new ExcelizePool();
             Context context1 = excelizePool.getContext();
             byte[] excelBytes = Files.readAllBytes(Paths.get("./src/main/resources/data.xlsx"));
-            context1.getBindings("js").putMember("excelFileBytes", excelBytes);
 
 
             Value readFunc = context1.getBindings("js").getMember("readExcel");
-            readFunc.execute();
+            readFunc.execute(excelBytes);
             Value bufferArray = context1.getPolyglotBindings().getMember("resultArray");
 
 
 
 
-
-
-
-
-
-            context.getBindings("js").putMember("daa",bufferArray);
             context.eval("js", "globalThis.self = globalThis;");
             context.eval("js", "globalThis.window = globalThis;");
             context.eval("js", "globalThis.document = { body: {} };");
             context.eval("js", "globalThis.window.location = { href: '' };");
 
 
-            byte[] tsfwasm = Files.readAllBytes(Paths.get("./src/main/resources/tfjs-backend-wasm-simd.wasm"));
-            context.getBindings("js").putMember("tsfwasm", tsfwasm);
-            context.eval("js", """
-                        if (typeof performance === 'undefined') {
-                          globalThis.performance = {
-                            now: function () {
-                              return Date.now();
-                            }
-                          };
-                        }
-                        """);
+            byte[] tsfjswasm = Files.readAllBytes(Paths.get("./src/main/resources/tfjs-backend-wasm-simd.wasm"));
+            context.getBindings("js").putMember("tsfwasm", tsfjswasm);
+
             context.eval("js", """
                                (() => {
                               const NativeURL = globalThis.URL;
@@ -128,7 +107,22 @@ public class ContextPool {
             );
             Source bundleSrc = Source.newBuilder("js",ContextPool.class.getResource("/bundle/bundle.mjs")).build();
             context.eval(bundleSrc);
-            this.context=context;
+            context.getBindings("js").getMember("trainModel").execute(bufferArray);
+            Context modelContext = Context.newBuilder("js", "wasm")
+                    .allowHostAccess(HostAccess.ALL)
+                    .allowAllAccess(true)
+                    .options(getLanguageOptions())
+                    .build();
+            Value model = context.getBindings("js").getMember("model");
+            modelContext.getBindings("js").putMember("model",model);
+            modelContext.eval("js", "globalThis.self = globalThis;");
+            modelContext.eval("js", "globalThis.window = globalThis;");
+            modelContext.eval("js", "globalThis.document = { body: {} };");
+            modelContext.eval("js", "globalThis.window.location = { href: '' };");
+            modelContext.eval(Source.newBuilder("js",ContextPool.class.getResource("/tf.es2017.js")).build());
+            modelContext.eval(Source.newBuilder("js",ContextPool.class.getResource("/predict.js")).build());
+
+            this.context=modelContext;
 
 
 

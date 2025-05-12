@@ -42,7 +42,6 @@ public class ExcelizePool {
 
         Map<String, String> engineOptions = new HashMap<>();
         engineOptions.put("engine.CompilerThreads", "1");
-        engineOptions.put("engine.WarnInterpreterOnly", "false");
         engineOptions.put("engine.MultiTier", "true");
         engineOptions.put("engine.Mode", "throughput");
 
