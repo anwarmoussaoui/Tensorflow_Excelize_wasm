@@ -74,4 +74,6 @@ globalThis.trainModel = async function(dataset) {
 
     console.log("Training complete.");
     Polyglot.export("model", model);
+    Polyglot.export("tf", tf);
+    console.log(tf);
 }

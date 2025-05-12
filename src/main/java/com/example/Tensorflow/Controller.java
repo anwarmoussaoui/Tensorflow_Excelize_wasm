@@ -5,6 +5,8 @@ import org.graalvm.polyglot.Value;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.graalvm.polyglot.proxy.ProxyExecutable;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import java.util.stream.DoubleStream;
 
@@ -17,7 +19,7 @@ public class Controller {
     }
 
     @PostMapping("/predict")
-    public String predictPrice(
+    public DeferredResult<String> predictPrice(
             @RequestParam double bedrooms,
             @RequestParam double bathrooms,
             @RequestParam double sqftLiving,
@@ -31,6 +33,7 @@ public class Controller {
             @RequestParam double yrBuilt,
             @RequestParam double yrRenovated,
             Model model) {
+        DeferredResult<String> deferredResult = new DeferredResult<>();
 
         double[] newHouse = {
                 bedrooms, bathrooms, sqftLiving, sqftLot,
@@ -47,13 +50,16 @@ public class Controller {
         Value prediction = predictFn.execute(input);
         Value arrayPromise = prediction.invokeMember("array");
 
-        context.eval("js", "var wait = async (p) => await p;");
-        Value result = context.getBindings("js").getMember("wait").execute(arrayPromise);
+        arrayPromise.invokeMember("then", (ProxyExecutable) result -> {
 
-        double price = result.getArrayElement(0).getArrayElement(0).asDouble();
-        long roundedPrice = Math.round(price);
 
-        model.addAttribute("predictedPrice", roundedPrice);
-        return "index";
+            double price = result[0].getArrayElement(0).getArrayElement(0).asDouble();
+            long roundedPrice = Math.round(price);
+            model.addAttribute("predictedPrice", roundedPrice);
+            deferredResult.setResult("index");
+            return null;
+        });
+
+        return deferredResult;
     }
 }

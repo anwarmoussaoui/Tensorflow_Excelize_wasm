@@ -18,7 +18,6 @@ public class ExcelizePool {
     private final Context context;
 
     public ExcelizePool() throws IOException {
-        final String INTERNAL_MODULE_URI_HEADER = "oracle:/mle/";
 
         // Use regular file paths
         byte[] excelizeWasmBytes = Files.readAllBytes(Paths.get("src/main/resources/excelize.wasm"));
@@ -41,7 +40,7 @@ public class ExcelizePool {
         options.put("js.commonjs-require-cwd", Paths.get("./").toAbsolutePath().toString());
 
         Map<String, String> engineOptions = new HashMap<>();
-        engineOptions.put("engine.CompilerThreads", "1");
+        //engineOptions.put("engine.CompilerThreads", "1");
         engineOptions.put("engine.MultiTier", "true");
         engineOptions.put("engine.Mode", "throughput");
 
@@ -70,7 +69,7 @@ public class ExcelizePool {
         // Evaluate the Excelize WASM module
         Source excelizeModule = Source.newBuilder("js", excelizeLib, "excelize.mjs")
                 .mimeType("application/javascript+module")
-                .uri(URI.create(INTERNAL_MODULE_URI_HEADER + "excelize.mjs"))
+                .uri(URI.create("excelize.mjs"))
                 .build();
         Value excelizeMod = context.eval(excelizeModule);
         context.getPolyglotBindings().putMember("excelize", excelizeMod);

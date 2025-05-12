@@ -113,14 +113,17 @@ public class ContextPool {
                     .allowAllAccess(true)
                     .options(getLanguageOptions())
                     .build();
+
+            Value tf = context.getBindings("js").getMember("tf");
+            modelContext.getBindings("js").putMember("tf",tf);
             Value model = context.getBindings("js").getMember("model");
             modelContext.getBindings("js").putMember("model",model);
             modelContext.eval("js", "globalThis.self = globalThis;");
             modelContext.eval("js", "globalThis.window = globalThis;");
             modelContext.eval("js", "globalThis.document = { body: {} };");
             modelContext.eval("js", "globalThis.window.location = { href: '' };");
-            modelContext.eval(Source.newBuilder("js",ContextPool.class.getResource("/tf.es2017.js")).build());
-            modelContext.eval(Source.newBuilder("js",ContextPool.class.getResource("/predict.js")).build());
+
+            modelContext.eval(Source.newBuilder("js",ContextPool.class.getResource("/predict.mjs")).build());
 
             this.context=modelContext;
 
