@@ -48,17 +48,17 @@ public class Controller {
         Value input = jsArray.newInstance((Object[]) DoubleStream.of(newHouse).boxed().toArray());
 
         Value prediction = predictFn.execute(input);
-        Value arrayPromise = prediction.invokeMember("array");
 
-        arrayPromise.invokeMember("then", (ProxyExecutable) result -> {
+        prediction.invokeMember("then", (ProxyExecutable) result -> {
 
-
+            System.out.println("results from java side"+result);
             double price = result[0].getArrayElement(0).getArrayElement(0).asDouble();
             long roundedPrice = Math.round(price);
             model.addAttribute("predictedPrice", roundedPrice);
             deferredResult.setResult("index");
             return null;
         });
+
 
         return deferredResult;
     }

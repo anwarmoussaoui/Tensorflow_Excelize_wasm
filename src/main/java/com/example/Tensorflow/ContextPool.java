@@ -22,7 +22,6 @@ public class ContextPool {
         options.put("js.webassembly", "true");
         options.put("js.performance", "true");
         options.put("js.commonjs-require", "true");
-        options.put("js.mle-mode", "true");
         options.put("js.esm-eval-returns-exports", "true");
         options.put("js.unhandled-rejections", "throw");
         options.put("js.commonjs-require-cwd", Paths.get("./").toAbsolutePath().toString());
@@ -45,12 +44,7 @@ public class ContextPool {
 
 
             Value readFunc = context1.getBindings("js").getMember("readExcel");
-            readFunc.execute(excelBytes);
-            Value bufferArray = context1.getPolyglotBindings().getMember("resultArray");
-
-
-
-
+            Value bufferArray = readFunc.execute(excelBytes);
             context.eval("js", "globalThis.self = globalThis;");
             context.eval("js", "globalThis.window = globalThis;");
             context.eval("js", "globalThis.document = { body: {} };");
@@ -60,7 +54,7 @@ public class ContextPool {
             byte[] tsfjswasm = Files.readAllBytes(Paths.get("./src/main/resources/tfjs-backend-wasm-simd.wasm"));
             context.getBindings("js").putMember("tsfwasm", tsfjswasm);
 
-            context.eval("js", """
+            String polyfill= """
                                (() => {
                               const NativeURL = globalThis.URL;
                     
@@ -104,31 +98,29 @@ public class ContextPool {
                       };
                     }
                     """
-            );
+                    ;
+            context.eval("js",polyfill);
             Source bundleSrc = Source.newBuilder("js",ContextPool.class.getResource("/bundle/bundle.mjs")).build();
             context.eval(bundleSrc);
             context.getBindings("js").getMember("trainModel").execute(bufferArray);
+            System.out.println( context.getBindings("js").getMember("savedArtifacts"));
             Context modelContext = Context.newBuilder("js", "wasm")
                     .allowHostAccess(HostAccess.ALL)
                     .allowAllAccess(true)
                     .options(getLanguageOptions())
                     .build();
 
-            Value tf = context.getBindings("js").getMember("tf");
-            modelContext.getBindings("js").putMember("tf",tf);
-            Value model = context.getBindings("js").getMember("model");
-            modelContext.getBindings("js").putMember("model",model);
             modelContext.eval("js", "globalThis.self = globalThis;");
             modelContext.eval("js", "globalThis.window = globalThis;");
             modelContext.eval("js", "globalThis.document = { body: {} };");
             modelContext.eval("js", "globalThis.window.location = { href: '' };");
+            modelContext.getBindings("js").putMember("tsfwasm", tsfjswasm);
+            modelContext.eval("js",polyfill);
 
-            modelContext.eval(Source.newBuilder("js",ContextPool.class.getResource("/predict.mjs")).build());
-
+            modelContext.eval(bundleSrc);
+            Value mdl = context.getBindings("js").getMember("savedArtifacts");
+            modelContext.getBindings("js").putMember("savedArtifacts",mdl);
             this.context=modelContext;
-
-
-
     }
 
     public Context getContext() {

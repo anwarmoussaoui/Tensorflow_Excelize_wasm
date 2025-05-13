@@ -1,6 +1,6 @@
 function readExcel(excelFileBytes) {
   let result ;
-  let x =new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     var start = Date.now();
     const go = new Go();
     global.excelize = {};
@@ -43,10 +43,6 @@ function readExcel(excelFileBytes) {
         reject(err);  // Reject promise on error
       });
   });
-
-  x.then(value=>{
-  result = value;
-  })
-  return result;
 }
+
 
