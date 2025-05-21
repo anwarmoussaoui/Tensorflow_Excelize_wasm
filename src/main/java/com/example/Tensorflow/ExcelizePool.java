@@ -23,9 +23,7 @@ public class ExcelizePool {
         byte[] excelizeWasmBytes = Files.readAllBytes(Paths.get("src/main/resources/excelize.wasm"));
         String test = Files.readString(Paths.get("src/main/resources/excelize_test.js"), StandardCharsets.UTF_8);
         String prep = Files.readString(Paths.get("src/main/resources/excelize_prep.js"), StandardCharsets.UTF_8);
-        String encodingIdxs = Files.readString(Paths.get("src/main/resources/encoding-indexes.js"), StandardCharsets.UTF_8);
-        String encoding = Files.readString(Paths.get("src/main/resources/encoding.js"), StandardCharsets.UTF_8);
-        String excelizeLib = Files.readString(Paths.get("src/main/resources/excelize_m.js"), StandardCharsets.UTF_8);
+         String excelizeLib = Files.readString(Paths.get("src/main/resources/excelize_m.js"), StandardCharsets.UTF_8);
 
         System.out.println("Executing excelize read...");
 
@@ -37,6 +35,7 @@ public class ExcelizePool {
         options.put("js.commonjs-require", "true");
         options.put("js.esm-eval-returns-exports", "true");
         options.put("js.unhandled-rejections", "throw");
+        options.put("js.text-encoding","true");
         options.put("js.commonjs-require-cwd", Paths.get("./").toAbsolutePath().toString());
 
         Map<String, String> engineOptions = new HashMap<>();
@@ -61,9 +60,7 @@ public class ExcelizePool {
                 .options(options)
                 .build();
 
-        // Evaluate helper JS libraries
-        context.eval(Source.newBuilder("js", encodingIdxs, "encoding-indexes.js").build());
-        context.eval(Source.newBuilder("js", encoding, "encoding.js").build());
+
         context.eval(Source.newBuilder("js", prep, "prep.js").build());
 
         // Evaluate the Excelize WASM module
