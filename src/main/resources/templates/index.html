@@ -90,45 +90,47 @@
 
 <h1>Predict House Price</h1>
 
+
 <form th:action="@{/predict}" method="post">
     <label>Bedrooms:</label>
-    <input type="number" name="bedrooms" placeholder="2" required step="1"/>
+    <input type="number" name="bedrooms" placeholder="2" required step="1" value="3"/>
 
     <label>Bathrooms:</label>
-    <input type="number" name="bathrooms" required step="1"/>
+    <input type="number" name="bathrooms" required step="1" value="2"/>
 
     <label>Living Area (sqft):</label>
-    <input type="number" name="sqftLiving" required/>
+    <input type="number" name="sqftLiving" required value="1800"/>
 
     <label>Lot Size (sqft):</label>
-    <input type="number" name="sqftLot" required/>
+    <input type="number" name="sqftLot" required value="5000"/>
 
     <label>Floors:</label>
-    <input type="number" name="floors" required step="1"/>
+    <input type="number" name="floors" required step="1" value="1"/>
 
     <label>Waterfront (1 or 0):</label>
-    <input type="number" name="waterfront" required min="0" max="1"/>
+    <input type="number" name="waterfront" required min="0" max="1" value="0"/>
 
-    <label>View (1–4):</label>
-    <input type="number" name="view" required min="0" max="4"/>
+    <label>View (0–4):</label>
+    <input type="number" name="view" required min="0" max="4" value="0"/>
 
     <label>Condition (1–5):</label>
-    <input type="number" name="condition" required min="1" max="5"/>
+    <input type="number" name="condition" required min="1" max="5" value="3"/>
 
     <label>Above Ground (sqft):</label>
-    <input type="number" name="sqftAbove" required/>
+    <input type="number" name="sqftAbove" required value="1500"/>
 
     <label>Basement (sqft):</label>
-    <input type="number" name="sqftBasement" required/>
+    <input type="number" name="sqftBasement" required value="300"/>
 
     <label>Year Built:</label>
-    <input type="number" name="yrBuilt" required/>
+    <input type="number" name="yrBuilt" required value="1990"/>
 
     <label>Year Renovated:</label>
-    <input type="number" name="yrRenovated" required/>
+    <input type="number" name="yrRenovated" required value="0"/>
 
     <button type="submit">Predict Price</button>
 </form>
+
 
 <div th:if="${predictedPrice}" class="result">
     <h2>Predicted Price: <span th:text="'$' + ${predictedPrice}"></span></h2>

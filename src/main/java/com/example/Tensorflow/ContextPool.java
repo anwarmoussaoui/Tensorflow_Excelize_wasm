@@ -12,8 +12,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 @Component
 public class ContextPool {
+    private final BlockingQueue<Context> contexts;
 
     private static Map<String, String> getLanguageOptions() {
         Map<String, String> options = new HashMap<>();
@@ -28,7 +32,6 @@ public class ContextPool {
         return options;
     }
 
-        private final Context context;
         public ContextPool () throws IOException {
 
         Context context = Context.newBuilder("js", "wasm")
@@ -104,6 +107,11 @@ public class ContextPool {
             context.eval(bundleSrc);
             context.getBindings("js").getMember("trainModel").execute(bufferArray);
             System.out.println( context.getBindings("js").getMember("savedArtifacts"));
+
+
+            int maxThreads = Runtime.getRuntime().availableProcessors();
+            contexts = new LinkedBlockingQueue<>(maxThreads);
+            for (int i = 0; i < maxThreads; i++) {
             Context modelContext = Context.newBuilder("js", "wasm")
                     .allowHostAccess(HostAccess.ALL)
                     .allowAllAccess(true)
@@ -120,10 +128,19 @@ public class ContextPool {
             modelContext.eval(bundleSrc);
             Value mdl = context.getBindings("js").getMember("savedArtifacts");
             modelContext.getBindings("js").putMember("savedArtifacts",mdl);
-            this.context=modelContext;
+            this.contexts.add(modelContext);
+
+            }
     }
 
     public Context getContext() {
-        return context;
+        try {
+            return contexts.take();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    void release(Context context) {
+        contexts.add(context);
     }
 }

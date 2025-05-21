@@ -59,7 +59,7 @@ public class Controller {
             return null;
         });
 
-
+        contextPool.release(context);
         return deferredResult;
     }
 }
