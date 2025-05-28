@@ -35,7 +35,6 @@ public class ContextPool {
         public ContextPool () throws IOException {
 
         Context context = Context.newBuilder("js", "wasm")
-                .allowHostAccess(HostAccess.ALL)
                 .allowAllAccess(true)
                 .options(getLanguageOptions())
                 .build();
@@ -48,10 +47,6 @@ public class ContextPool {
 
             Value readFunc = context1.getBindings("js").getMember("readExcel");
             Value bufferArray = readFunc.execute(excelBytes);
-            context.eval("js", "globalThis.self = globalThis;");
-            context.eval("js", "globalThis.window = globalThis;");
-            context.eval("js", "globalThis.document = { body: {} };");
-            context.eval("js", "globalThis.window.location = { href: '' };");
 
 
             byte[] tsfjswasm = Files.readAllBytes(Paths.get("./src/main/resources/tfjs-backend-wasm-simd.wasm"));
@@ -100,6 +95,10 @@ public class ContextPool {
                         return WebAssembly.instantiate(new Uint8Array(buffer), importObject);
                       };
                     }
+                    globalThis.self = globalThis;
+                    globalThis.window = globalThis;
+                    globalThis.document = { body: {} }
+                    globalThis.window.location = { href: '' }
                     """
                     ;
             context.eval("js",polyfill);
@@ -118,10 +117,6 @@ public class ContextPool {
                     .options(getLanguageOptions())
                     .build();
 
-            modelContext.eval("js", "globalThis.self = globalThis;");
-            modelContext.eval("js", "globalThis.window = globalThis;");
-            modelContext.eval("js", "globalThis.document = { body: {} };");
-            modelContext.eval("js", "globalThis.window.location = { href: '' };");
             modelContext.getBindings("js").putMember("tsfwasm", tsfjswasm);
             modelContext.eval("js",polyfill);
 

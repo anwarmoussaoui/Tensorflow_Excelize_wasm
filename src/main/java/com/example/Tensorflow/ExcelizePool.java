@@ -29,14 +29,8 @@ public class ExcelizePool {
 
         // Configure engine options
         Map<String, String> options = new HashMap<>();
-        options.put("js.ecmascript-version", "2023");
-        options.put("js.top-level-await", "true");
         options.put("js.webassembly", "true");
-        options.put("js.commonjs-require", "true");
-        options.put("js.esm-eval-returns-exports", "true");
-        options.put("js.unhandled-rejections", "throw");
         options.put("js.text-encoding","true");
-        options.put("js.commonjs-require-cwd", Paths.get("./").toAbsolutePath().toString());
 
         Map<String, String> engineOptions = new HashMap<>();
         //engineOptions.put("engine.CompilerThreads", "1");
@@ -51,12 +45,7 @@ public class ExcelizePool {
         // Build the context
         Context context = Context.newBuilder("js", "wasm")
                 .engine(engine)
-                .allowIO(IOAccess.ALL)
                 .allowAllAccess(true)
-                .allowPolyglotAccess(PolyglotAccess.ALL)
-                .allowExperimentalOptions(true)
-                .allowHostClassLookup(s -> true)
-                .allowHostAccess(HostAccess.ALL)
                 .options(options)
                 .build();
 
