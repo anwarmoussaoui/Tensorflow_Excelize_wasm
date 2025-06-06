@@ -1,7 +1,6 @@
 package com.example.Tensorflow;
 
 import org.graalvm.polyglot.*;
-import org.graalvm.polyglot.io.IOAccess;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -21,7 +20,7 @@ public class ExcelizePool {
 
         // Use regular file paths
         byte[] excelizeWasmBytes = Files.readAllBytes(Paths.get("src/main/resources/excelize.wasm"));
-        String test = Files.readString(Paths.get("src/main/resources/excelize_test.js"), StandardCharsets.UTF_8);
+        String test = Files.readString(Paths.get("src/main/resources/excelize.js"), StandardCharsets.UTF_8);
         String prep = Files.readString(Paths.get("src/main/resources/excelize_prep.js"), StandardCharsets.UTF_8);
          String excelizeLib = Files.readString(Paths.get("src/main/resources/excelize_m.js"), StandardCharsets.UTF_8);
 
@@ -62,7 +61,7 @@ public class ExcelizePool {
         context.getBindings("js").putMember("wasmBytes", excelizeWasmBytes);
 
         // Evaluate test script
-        context.eval(Source.newBuilder("js", test, "excelize_test.js").build());
+        context.eval(Source.newBuilder("js", test, "excelize.js").build());
 
         this.context = context;
     }

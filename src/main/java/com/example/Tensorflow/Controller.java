@@ -42,24 +42,28 @@ public class Controller {
         };
 
         Context context = contextPool.getContext();
-        Value predictFn = context.getBindings("js").getMember("predictHouse");
+        try {
+            Value predictFn = context.getBindings("js").getMember("predictHouse");
 
-        Value jsArray = context.eval("js", "Array");
-        Value input = jsArray.newInstance((Object[]) DoubleStream.of(newHouse).boxed().toArray());
+            Value jsArray = context.eval("js", "Array");
+            Value input = jsArray.newInstance((Object[]) DoubleStream.of(newHouse).boxed().toArray());
 
-        Value prediction = predictFn.execute(input);
+            Value prediction = predictFn.execute(input);
 
-        prediction.invokeMember("then", (ProxyExecutable) result -> {
+            prediction.invokeMember("then", (ProxyExecutable) result -> {
 
-            System.out.println("results from java side"+result);
-            double price = result[0].getArrayElement(0).getArrayElement(0).asDouble();
-            long roundedPrice = Math.round(price);
-            model.addAttribute("predictedPrice", roundedPrice);
-            deferredResult.setResult("index");
-            return null;
-        });
+                System.out.println("results from java side" + result);
+                double price = result[0].getArrayElement(0).getArrayElement(0).asDouble();
+                long roundedPrice = Math.round(price);
+                model.addAttribute("predictedPrice", roundedPrice);
+                deferredResult.setResult("index");
+                return null;
+            });
+        }finally {
+            contextPool.release(context);
+        }
 
-        contextPool.release(context);
+
         return deferredResult;
     }
 }
