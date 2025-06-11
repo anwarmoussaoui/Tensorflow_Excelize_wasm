@@ -9,15 +9,16 @@ await tf.ready();
 
 console.log("Starting training...");
 globalThis.predictHouse = async function(houseFeatures) {
+    console.time("predict");
     const model = await tf.loadLayersModel({
         load: async () => savedArtifacts
     });
     const inputTensor = tf.tensor2d([houseFeatures]);
 
-    // Run prediction
     const prediction = model.predict(inputTensor);
     prediction.print();
     return prediction.array();
+    console.timeEnd("predict");
 };
 
 let model;  //
